@@ -16,13 +16,22 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'node-server',
     externals: {
-      // Inline prisma client to avoid resolver issues with .prisma subpath during build
-      inline: ['@prisma/client', 'prisma']
+      // Inline prisma client only in production; keep external in dev
+      inline: process.env.NODE_ENV === 'production' ? ['@prisma/client', 'prisma'] : []
     },
     moduleSideEffects: ['@prisma/client'],
-    rollupConfig: {
+    rollupConfig: process.env.NODE_ENV === 'production' ? {
       // Ensure rollup treats .prisma virtual subpath as external to avoid resolution errors
       external: [/^\.prisma\/.*/]
+    } : undefined
+  },
+  vite: {
+    ssr: {
+      // Do not bundle prisma in dev SSR; load from node_modules
+      external: ['@prisma/client', '.prisma']
+    },
+    optimizeDeps: {
+      exclude: ['@prisma/client', '.prisma']
     }
   },
   runtimeConfig: {
