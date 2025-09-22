@@ -1,3 +1,5 @@
+import { resolve as resolvePath } from 'node:path'
+// Note: avoid relying on Node type refs to keep lint simple
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -13,30 +15,23 @@ export default defineNuxtConfig({
     { path: '~~/components/ui', pathPrefix: false },
     { path: '~~/components', pathPrefix: false }
   ],
+
   nitro: {
     preset: 'node-server',
     externals: {
-      // Inline prisma client only in production; keep external in dev
-      inline: process.env.NODE_ENV === 'production' ? ['@prisma/client', 'prisma'] : []
+      inline: ['@prisma/client', '.prisma/client']   // ✅ inline Prisma fully (node + generated)
     },
-    moduleSideEffects: ['@prisma/client'],
-    rollupConfig: process.env.NODE_ENV === 'production' ? {
-      // Ensure rollup treats .prisma virtual subpath as external to avoid resolution errors
-      external: [/^\.prisma\/.*/]
-    } : undefined
-  },
-  vite: {
-    ssr: {
-      // Do not bundle prisma in dev SSR; load from node_modules
-      external: ['@prisma/client', '.prisma']
-    },
-    optimizeDeps: {
-      exclude: ['@prisma/client', '.prisma']
+    moduleSideEffects: ['@prisma/client', '.prisma/client'],            // ✅ ensure Prisma doesn’t get tree-shaken
+    alias: {
+      '.prisma/client/default': resolvePath('./node_modules/.prisma/client/default.js'),
+      '.prisma/client': resolvePath('./node_modules/.prisma/client/index.js')
     }
   },
+
   runtimeConfig: {
-    authSecret: process.env.NUXT_AUTH_SECRET || 'dev-secret-change-me'
+    authSecret: (globalThis as any).process?.env?.NUXT_AUTH_SECRET || 'dev-secret-change-me'
   },
+
   postcss: {
     plugins: {
       tailwindcss: {},

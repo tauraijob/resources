@@ -3,11 +3,22 @@
   "files": [],
   "compilerOptions": {
     "baseUrl": ".",
+    "types": [
+      "node"
+    ],
     "paths": {
-      "@/*": ["./*"],
-      "~/*": ["./*"],
-      "#components": ["./components"],
-      "#ui/*": ["./components/ui/*"]
+      "@/*": [
+        "./*"
+      ],
+      "~/*": [
+        "./*"
+      ],
+      "#components": [
+        "./components"
+      ],
+      "#ui/*": [
+        "./components/ui/*"
+      ]
     }
   },
   "references": [

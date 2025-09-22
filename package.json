@@ -30,6 +30,7 @@
     "@egoist/tailwindcss-icons": "^1.9.0",
     "@iconify-json/lucide": "^1.2.66",
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "@types/node": "^24.5.2",
     "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.542.0",
