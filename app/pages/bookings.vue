@@ -95,7 +95,10 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ alias: ['/admin/bookings'] })
+definePageMeta({ 
+    alias: ['/admin/bookings'],
+    middleware: 'auth'
+})
 const route = useRoute()
 const { data: me } = await useFetch('/api/auth/me')
 const { data: resources } = await useFetch('/api/resources')

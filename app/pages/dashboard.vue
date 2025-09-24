@@ -16,7 +16,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div v-for="s in statusList" :key="s.id">
           <NuxtLink v-if="s.status==='AVAILABLE'" :to="{ path: '/bookings', query: { resourceId: s.id } }">
-            <Card class="transition hover:ring-1 hover:ring-ring cursor-pointer">
+            <Card class="transition-all duration-200 hover:ring-2 hover:ring-primary hover:scale-[1.02] cursor-pointer">
               <CardHeader>
                 <CardTitle>{{ s.name }}</CardTitle>
                 <CardDescription>{{ s.category }}</CardDescription>
@@ -31,7 +31,7 @@
           </NuxtLink>
           <Dialog v-else>
             <DialogTrigger as-child>
-              <Card class="cursor-pointer">
+              <Card class="cursor-pointer transition-all duration-200 hover:ring-2 hover:ring-primary hover:scale-[1.02]">
                 <CardHeader>
                   <CardTitle>{{ s.name }}</CardTitle>
                   <CardDescription>{{ s.category }}</CardDescription>
@@ -125,7 +125,10 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ alias: ['/admin/dashboard'] })
+definePageMeta({ 
+    alias: ['/admin/dashboard'],
+    middleware: 'auth'
+})
 import { Bar, Doughnut } from 'vue-chartjs'
 import { Chart, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
 Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)

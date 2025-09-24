@@ -1,5 +1,3 @@
-import { getSessionUser } from '~/server/utils/auth'
-
 export default defineNuxtRouteMiddleware(async (to) => {
     const publicRoutes = new Set(['/', '/login'])
     if (publicRoutes.has(to.path)) return
@@ -20,6 +18,3 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return navigateTo('/login')
     }
 })
-
-
-

@@ -92,7 +92,10 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ alias: ['/admin/resources'] })
+definePageMeta({ 
+    alias: ['/admin/resources'],
+    middleware: 'auth'
+})
 const { data: me } = await useFetch('/api/auth/me')
 const { data: resources, refresh } = await useFetch('/api/resources')
 const { data: statuses } = await useFetch('/api/resources/status')
