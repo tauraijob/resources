@@ -115,8 +115,14 @@
             <TableCell>{{ formatDate(b.endTime) }}</TableCell>
             <TableCell><Badge :variant="b.status==='APPROVED' ? 'default' : (b.status==='PENDING' ? 'secondary' : 'destructive')">{{ b.status }}</Badge></TableCell>
             <TableCell class="flex gap-2 justify-end">
-              <Button v-if="b.status==='PENDING'" size="sm" variant="outline" @click="approve(b.id)">Approve</Button>
-              <Button v-if="b.status==='PENDING'" size="sm" variant="destructive" @click="reject(b.id)">Reject</Button>
+              <Button v-if="b.status==='PENDING'" size="sm" variant="outline" @click="approve(b.id)" :disabled="approving === b.id">
+                <span v-if="approving === b.id">Approving...</span>
+                <span v-else>Approve</span>
+              </Button>
+              <Button v-if="b.status==='PENDING'" size="sm" variant="destructive" @click="openRejectDialog(b)" :disabled="rejecting === b.id">
+                <span v-if="rejecting === b.id">Rejecting...</span>
+                <span v-else>Reject</span>
+              </Button>
             </TableCell>
           </TableRow>
         </TableBody>
@@ -319,7 +325,33 @@
       </DialogContent>
     </Dialog>
 
-    <section>
+    <!-- Rejection Dialog -->
+    <Dialog v-model:open="rejectDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reject Booking</DialogTitle>
+          <DialogDescription>
+            Rejecting booking for {{ rejectingBooking?.resource?.name }} by {{ rejectingBooking?.user?.email }}
+          </DialogDescription>
+        </DialogHeader>
+        <form class="space-y-3" @submit.prevent="confirmReject">
+          <div>
+            <Label class="block text-sm">Rejection Reason (Optional)</Label>
+            <Textarea 
+              v-model="rejectionNote" 
+              placeholder="Please provide a reason for rejection..."
+              rows="3"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" @click="rejectDialog = false">Cancel</Button>
+            <Button type="submit" variant="destructive">Reject Booking</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+
+    <!-- <section>
       <h2 class="font-medium mb-2">Reports</h2>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card class="lg:col-span-2">
@@ -341,22 +373,23 @@
           </CardContent>
         </Card>
       </div>
-    </section>
+    </section> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { Bar, Doughnut } from 'vue-chartjs'
-import { Chart, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
-Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)
+// import { Bar, Doughnut } from 'vue-chartjs'
+// import { Chart, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
+// import { useToast } from '~/components/ui/toast/use-toast'
+// Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)
 
 definePageMeta({ middleware: ['admin'] })
 
 type UserListItem = { id: number; email: string; username: string; name: string | null; role: 'EMPLOYEE' | 'ADMIN'; createdAt: string | Date; active: boolean }
 
-const { data: stats, refresh: refreshStats } = await useFetch('/api/stats')
-const { data: resources, refresh: refreshResources } = await useFetch('/api/resources')
-const { data: users, refresh: refreshUsers } = await useFetch<UserListItem[]>('/api/users')
+const { data: stats, refresh: refreshStats } = await useFetch('/api/stats', { server: false })
+const { data: resources, refresh: refreshResources } = await useFetch('/api/resources', { server: false })
+const { data: users, refresh: refreshUsers } = await useFetch<UserListItem[]>('/api/users', { server: false })
 const usersList = computed<UserListItem[]>(() => (users.value as any) || [])
 
 const filters = reactive<{ userId: string | ''; resourceId: string | ''; status: string | ''; from: string | ''; to: string | ''}>({
@@ -385,21 +418,86 @@ async function loadBookings() {
     throw e
   }
 }
-await loadBookings()
+// await loadBookings()
+
+onMounted(() => {
+  loadBookings()
+})
 
 function formatDate(d: string | Date) {
   const date = new Date(d)
   return date.toLocaleString()
 }
 
+const approving = ref<number | null>(null)
+const rejecting = ref<number | null>(null)
+const rejectDialog = ref(false)
+const rejectingBooking = ref<any>(null)
+const rejectionNote = ref('')
+
 async function approve(id: number) {
-  await $fetch(`/api/bookings/${id}/approve`, { method: 'POST' })
-  await refreshAll()
+  approving.value = id
+  try {
+    await $fetch(`/api/bookings/${id}/approve`, { method: 'POST' })
+    await refreshAll()
+    // Show success message
+    // const { toast } = useToast()
+    // toast({
+    //   title: "Booking Approved",
+    //   description: "The booking has been successfully approved.",
+    // })
+    console.log('Booking approved successfully')
+  } catch (error: any) {
+    // const { toast } = useToast()
+    // toast({
+    //   title: "Approval Failed",
+    //   description: error?.data?.statusMessage || error?.message || "Failed to approve booking",
+    //   variant: "destructive"
+    // })
+    console.error('Approval failed:', error)
+  } finally {
+    approving.value = null
+  }
 }
 
-async function reject(id: number) {
-  await $fetch(`/api/bookings/${id}/reject`, { method: 'POST' })
-  await refreshAll()
+function openRejectDialog(booking: any) {
+  rejectingBooking.value = booking
+  rejectionNote.value = ''
+  rejectDialog.value = true
+}
+
+async function confirmReject() {
+  if (!rejectingBooking.value) return
+  
+  rejecting.value = rejectingBooking.value.id
+  try {
+    await $fetch(`/api/bookings/${rejectingBooking.value.id}/reject`, { 
+      method: 'POST',
+      body: { note: rejectionNote.value }
+    })
+    await refreshAll()
+    rejectDialog.value = false
+    rejectingBooking.value = null
+    rejectionNote.value = ''
+    
+    // Show success message
+    // const { toast } = useToast()
+    // toast({
+    //   title: "Booking Rejected",
+    //   description: "The booking has been rejected.",
+    // })
+    console.log('Booking rejected successfully')
+  } catch (error: any) {
+    // const { toast } = useToast()
+    // toast({
+    //   title: "Rejection Failed",
+    //   description: error?.data?.statusMessage || error?.message || "Failed to reject booking",
+    //   variant: "destructive"
+    // })
+    console.error('Rejection failed:', error)
+  } finally {
+    rejecting.value = null
+  }
 }
 
 async function refreshAll() {

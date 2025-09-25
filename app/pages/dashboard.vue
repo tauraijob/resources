@@ -133,9 +133,9 @@ import { Bar, Doughnut } from 'vue-chartjs'
 import { Chart, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
 Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)
 
-const { data: statusList } = await useFetch('/api/resources/status')
-const { data: bookings } = await useFetch('/api/bookings')
-const { data: meStats } = await useFetch('/api/users/me/stats')
+const { data: statusList } = await useFetch('/api/resources/status', { server: false })
+const { data: bookings } = await useFetch('/api/bookings', { server: false })
+const { data: meStats } = await useFetch('/api/users/me/stats', { server: false })
 
 function formatDate(d: string | Date) {
   const date = new Date(d)

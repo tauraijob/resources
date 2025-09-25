@@ -100,9 +100,9 @@ definePageMeta({
     middleware: 'auth'
 })
 const route = useRoute()
-const { data: me } = await useFetch('/api/auth/me')
-const { data: resources } = await useFetch('/api/resources')
-const { data: bookings, refresh } = await useFetch('/api/bookings')
+const { data: me } = await useFetch('/api/auth/me', { server: false })
+const { data: resources } = await useFetch('/api/resources', { server: false })
+const { data: bookings, refresh } = await useFetch('/api/bookings', { server: false })
 const form = reactive({ resourceId: 0, location: '', startTime: '', endTime: '', notes: '' })
 const selectValue = ref<string | undefined>(undefined)
 const submitting = ref(false)

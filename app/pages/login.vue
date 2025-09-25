@@ -44,18 +44,32 @@ const email = ref('')
 const username = ref('')
 const password = ref('')
 
+// Redirect if already logged in
+const { user: me } = useAuth()
+watch(me, (user) => {
+  if (user) {
+    const route = useRoute()
+    const next = typeof route.query.next === 'string' ? route.query.next : (user.role === 'ADMIN' ? '/admin' : '/dashboard')
+    navigateTo(next)
+  }
+}, { immediate: true })
+
 async function onSubmit() {
   const u: any = await $fetch('/api/auth/login', { method: 'POST', body: { email: email.value || undefined, username: username.value || undefined, password: password.value } })
+  const { fetchUser } = useAuth()
+  await fetchUser() // Refresh auth state
   const route = useRoute()
   const next = typeof route.query.next === 'string' ? route.query.next : (u?.role === 'ADMIN' ? '/admin' : '/dashboard')
-  navigateTo(next)
+  await navigateTo(next, { replace: true })
 }
 
 async function loginAsAdmin() {
   const u: any = await $fetch('/api/auth/login', { method: 'POST', body: { email: 'admin@webdev.co.zw', password: 'admin' } })
+  const { fetchUser } = useAuth()
+  await fetchUser() // Refresh auth state
   const route = useRoute()
   const next = typeof route.query.next === 'string' ? route.query.next : (u?.role === 'ADMIN' ? '/admin' : '/dashboard')
-  navigateTo(next)
+  await navigateTo(next, { replace: true })
 }
 </script>
 

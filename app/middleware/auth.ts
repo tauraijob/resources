@@ -1,9 +1,12 @@
 export default defineNuxtRouteMiddleware(async (to) => {
+    const publicRoutes = new Set(['/', '/login'])
+    if (publicRoutes.has(to.path)) return
+
     // Skip server-side execution to avoid SSR issues
     if (process.server) return
 
     // On client side, use the global auth state
-    const { user, fetchUser, isAdmin } = useAuth()
+    const { user, fetchUser } = useAuth()
 
     // If we don't have user data, try to fetch it
     if (!user.value) {
@@ -11,12 +14,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
             await fetchUser()
         } catch (error) {
             console.error('Auth fetch error:', error)
-            return navigateTo(`/login?next=${encodeURIComponent(to.fullPath)}`)
+            return navigateTo('/login')
         }
     }
 
-    // If still no user after fetch, or user is not admin, redirect to login
-    if (!user.value || !isAdmin.value) {
-        return navigateTo(`/login?next=${encodeURIComponent(to.fullPath)}`)
+    // If still no user after fetch, redirect to login
+    if (!user.value) {
+        return navigateTo('/login')
     }
 })

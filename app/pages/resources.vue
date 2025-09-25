@@ -96,9 +96,9 @@ definePageMeta({
     alias: ['/admin/resources'],
     middleware: 'auth'
 })
-const { data: me } = await useFetch('/api/auth/me')
-const { data: resources, refresh } = await useFetch('/api/resources')
-const { data: statuses } = await useFetch('/api/resources/status')
+const { data: me } = await useFetch('/api/auth/me', { server: false })
+const { data: resources, refresh } = await useFetch('/api/resources', { server: false })
+const { data: statuses } = await useFetch('/api/resources/status', { server: false })
 const form = reactive({ name: '', category: '', location: '' })
 
 async function create() {
