@@ -27,7 +27,9 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    authSecret: (globalThis as any).process?.env?.NUXT_AUTH_SECRET || 'dev-secret-change-me'
+    authSecret: (globalThis as any).process?.env?.NUXT_AUTH_SECRET || 'dev-secret-change-me',
+    mailtrapApiToken: (globalThis as any).process?.env?.MAILTRAP_API_TOKEN || '',
+    fromEmail: (globalThis as any).process?.env?.FROM_EMAIL || 'noreply@webdev.co.zw'
   },
 
   postcss: {

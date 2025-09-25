@@ -1,5 +1,6 @@
 import { prisma } from '~~/server/utils/prisma'
 import { requireUser } from '~~/server/utils/auth'
+import { sendBookingNotificationAdmin } from '~~/server/utils/email'
 
 type Body = {
     resourceId: number
@@ -42,8 +43,43 @@ export default defineEventHandler(async (event) => {
             endTime: end,
             notes: body.notes ?? null
         },
-        include: { resource: true }
+        include: {
+            resource: true,
+            user: { select: { id: true, email: true, name: true, username: true } }
+        }
     })
+
+    // Send notification to all admins
+    try {
+        const admins = await prisma.user.findMany({
+            where: { role: 'ADMIN', active: true },
+            select: { email: true, name: true, username: true }
+        })
+
+        const userName = user.name || user.username || user.email.split('@')[0]
+        const startTime = new Date(booking.startTime).toLocaleString()
+        const endTime = new Date(booking.endTime).toLocaleString()
+        const location = booking.location || 'Not specified'
+
+        // Send email to all admins
+        for (const admin of admins) {
+            const adminName = admin.name || admin.username || admin.email.split('@')[0]
+            await sendBookingNotificationAdmin(
+                admin.email,
+                adminName,
+                userName,
+                booking.resource.name,
+                startTime,
+                endTime,
+                location
+            )
+        }
+        console.log('Admin notification emails sent successfully')
+    } catch (emailError) {
+        console.error('Failed to send admin notification emails:', emailError)
+        // Don't fail the booking creation if email fails
+    }
+
     return booking
 })
 

@@ -20,15 +20,17 @@ enum BookingStatus {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  username     String   @unique
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  username     String    @unique
   passwordHash String
   name         String?
-  role         UserRole @default(EMPLOYEE)
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         UserRole  @default(EMPLOYEE)
+  active       Boolean   @default(true)
+  resetToken   String?
+  resetExpiry  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   bookings  Booking[]
   approvals Approval[] @relation("ApprovalAdmin")
