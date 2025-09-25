@@ -15,8 +15,8 @@
       <h2 class="font-medium mb-2">Resources</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div v-for="s in statusList" :key="s.id">
-          <NuxtLink v-if="s.status==='AVAILABLE'" :to="{ path: '/bookings', query: { resourceId: s.id } }">
-            <Card class="transition-all duration-200 hover:ring-2 hover:ring-primary hover:scale-[1.02] cursor-pointer">
+            <NuxtLink v-if="s.status==='AVAILABLE'" :to="{ path: '/bookings', query: { resourceId: s.id } }">
+              <Card class="shadow-float cursor-pointer">
               <CardHeader>
                 <CardTitle>{{ s.name }}</CardTitle>
                 <CardDescription>{{ s.category }}</CardDescription>
@@ -31,7 +31,7 @@
           </NuxtLink>
           <Dialog v-else>
             <DialogTrigger as-child>
-              <Card class="cursor-pointer transition-all duration-200 hover:ring-2 hover:ring-primary hover:scale-[1.02]">
+              <Card class="shadow-card cursor-pointer">
                 <CardHeader>
                   <CardTitle>{{ s.name }}</CardTitle>
                   <CardDescription>{{ s.category }}</CardDescription>
@@ -86,13 +86,13 @@
     </section>
 
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <Card class="lg:col-span-2">
+      <Card class="lg:col-span-2 shadow-card-glow">
         <CardHeader><CardTitle>Bookings per month</CardTitle><CardDescription>Current year</CardDescription></CardHeader>
         <CardContent>
           <Bar :data="barData" :options="barOptions" />
         </CardContent>
       </Card>
-      <Card>
+      <Card class="shadow-float">
         <CardHeader><CardTitle>Status distribution</CardTitle><CardDescription>Your bookings</CardDescription></CardHeader>
         <CardContent>
           <Doughnut :data="doughnutData" :options="doughnutOptions" />

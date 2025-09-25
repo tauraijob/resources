@@ -31,7 +31,6 @@
           </div>
           <div class="flex gap-2">
             <Button type="submit">Sign in</Button>
-            <Button type="button" variant="outline" @click="loginAsAdmin">Admin quick login</Button>
           </div>
         </form>
       </CardContent>
@@ -63,14 +62,6 @@ async function onSubmit() {
   await navigateTo(next, { replace: true })
 }
 
-async function loginAsAdmin() {
-  const u: any = await $fetch('/api/auth/login', { method: 'POST', body: { email: 'admin@webdev.co.zw', password: 'admin' } })
-  const { fetchUser } = useAuth()
-  await fetchUser() // Refresh auth state
-  const route = useRoute()
-  const next = typeof route.query.next === 'string' ? route.query.next : (u?.role === 'ADMIN' ? '/admin' : '/dashboard')
-  await navigateTo(next, { replace: true })
-}
 </script>
 
 

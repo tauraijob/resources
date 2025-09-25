@@ -4,28 +4,30 @@ const prisma = new PrismaClient()
 
 async function main() {
     // Users
+    // Default password for all users: "SecurePass123!"
+    // SHA256 hash: ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f
     const admin = await prisma.user.upsert({
         where: { email: 'admin@webdev.co.zw' },
         update: {},
-        create: { email: 'admin@webdev.co.zw', username: 'admin', passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', name: 'Admin', role: 'ADMIN' }
+        create: { email: 'admin@webdev.co.zw', username: 'admin', passwordHash: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', name: 'Admin', role: 'ADMIN' }
     })
 
     const admin2 = await prisma.user.upsert({
         where: { email: 'manager@webdev.co.zw' },
         update: {},
-        create: { email: 'manager@webdev.co.zw', username: 'manager', passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', name: 'Manager', role: 'ADMIN' }
+        create: { email: 'manager@webdev.co.zw', username: 'manager', passwordHash: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', name: 'Manager', role: 'ADMIN' }
     })
 
     const alice = await prisma.user.upsert({
         where: { email: 'alice@webdev.co.zw' },
         update: {},
-        create: { email: 'alice@webdev.co.zw', username: 'alice', passwordHash: '2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b', name: 'Alice Employee' }
+        create: { email: 'alice@webdev.co.zw', username: 'alice', passwordHash: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', name: 'Alice Employee' }
     })
 
     const bob = await prisma.user.upsert({
         where: { email: 'bob@webdev.co.zw' },
         update: {},
-        create: { email: 'bob@webdev.co.zw', username: 'bob', passwordHash: '2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b', name: 'Bob Employee' }
+        create: { email: 'bob@webdev.co.zw', username: 'bob', passwordHash: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', name: 'Bob Employee' }
     })
 
     // Helper create-if-missing by name

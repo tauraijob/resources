@@ -73,19 +73,88 @@
 
     /* Enhanced shadows with primary color tint */
     .shadow-primary {
-        box-shadow: 0 1px 3px 0 rgba(241, 105, 42, 0.1), 0 1px 2px 0 rgba(241, 105, 42, 0.06);
+        box-shadow:
+            0 1px 3px 0 rgba(241, 105, 42, 0.12),
+            0 1px 2px 0 rgba(241, 105, 42, 0.08),
+            0 0 0 1px rgba(241, 105, 42, 0.05);
     }
 
     .shadow-primary-md {
-        box-shadow: 0 4px 6px -1px rgba(241, 105, 42, 0.1), 0 2px 4px -1px rgba(241, 105, 42, 0.06);
+        box-shadow:
+            0 4px 6px -1px rgba(241, 105, 42, 0.15),
+            0 2px 4px -1px rgba(241, 105, 42, 0.1),
+            0 0 0 1px rgba(241, 105, 42, 0.08),
+            0 0 20px rgba(241, 105, 42, 0.05);
     }
 
     .shadow-primary-lg {
-        box-shadow: 0 10px 15px -3px rgba(241, 105, 42, 0.1), 0 4px 6px -2px rgba(241, 105, 42, 0.05);
+        box-shadow:
+            0 10px 15px -3px rgba(241, 105, 42, 0.18),
+            0 4px 6px -2px rgba(241, 105, 42, 0.12),
+            0 0 0 1px rgba(241, 105, 42, 0.1),
+            0 0 30px rgba(241, 105, 42, 0.08);
     }
 
     .shadow-primary-xl {
-        box-shadow: 0 20px 25px -5px rgba(241, 105, 42, 0.1), 0 10px 10px -5px rgba(241, 105, 42, 0.04);
+        box-shadow:
+            0 20px 25px -5px rgba(241, 105, 42, 0.2),
+            0 10px 10px -5px rgba(241, 105, 42, 0.1),
+            0 0 0 1px rgba(241, 105, 42, 0.12),
+            0 0 40px rgba(241, 105, 42, 0.1);
+    }
+
+    /* Amazing card shadows */
+    .shadow-card {
+        box-shadow:
+            0 1px 3px 0 rgba(0, 0, 0, 0.1),
+            0 1px 2px 0 rgba(0, 0, 0, 0.06),
+            0 0 0 1px rgba(241, 105, 42, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .shadow-card:hover {
+        box-shadow:
+            0 10px 15px -3px rgba(241, 105, 42, 0.2),
+            0 4px 6px -2px rgba(241, 105, 42, 0.15),
+            0 0 0 1px rgba(241, 105, 42, 0.1),
+            0 0 30px rgba(241, 105, 42, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .shadow-card-glow {
+        box-shadow:
+            0 4px 6px -1px rgba(241, 105, 42, 0.15),
+            0 2px 4px -1px rgba(241, 105, 42, 0.1),
+            0 0 0 1px rgba(241, 105, 42, 0.08),
+            0 0 20px rgba(241, 105, 42, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .shadow-card-glow:hover {
+        box-shadow:
+            0 20px 25px -5px rgba(241, 105, 42, 0.25),
+            0 10px 10px -5px rgba(241, 105, 42, 0.15),
+            0 0 0 1px rgba(241, 105, 42, 0.12),
+            0 0 40px rgba(241, 105, 42, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: translateY(-4px) scale(1.02);
+    }
+
+    /* Floating card effect */
+    .shadow-float {
+        box-shadow:
+            0 1px 3px 0 rgba(0, 0, 0, 0.1),
+            0 1px 2px 0 rgba(0, 0, 0, 0.06),
+            0 0 0 1px rgba(241, 105, 42, 0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .shadow-float:hover {
+        box-shadow:
+            0 25px 50px -12px rgba(241, 105, 42, 0.3),
+            0 0 0 1px rgba(241, 105, 42, 0.1),
+            0 0 50px rgba(241, 105, 42, 0.2);
+        transform: translateY(-8px) scale(1.03);
     }
 
     /* Primary-tinted borders */
@@ -102,5 +171,42 @@
         outline: 2px solid transparent;
         outline-offset: 2px;
         box-shadow: 0 0 0 2px rgba(241, 105, 42, 0.5);
+    }
+
+    /* Amazing button effects */
+    .btn-glow {
+        box-shadow:
+            0 4px 6px -1px rgba(241, 105, 42, 0.2),
+            0 2px 4px -1px rgba(241, 105, 42, 0.1),
+            0 0 0 1px rgba(241, 105, 42, 0.1),
+            0 0 20px rgba(241, 105, 42, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-glow:hover {
+        box-shadow:
+            0 10px 15px -3px rgba(241, 105, 42, 0.3),
+            0 4px 6px -2px rgba(241, 105, 42, 0.2),
+            0 0 0 1px rgba(241, 105, 42, 0.15),
+            0 0 30px rgba(241, 105, 42, 0.2);
+        transform: translateY(-1px);
+    }
+
+    /* Glass morphism effect */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow:
+            0 8px 32px 0 rgba(241, 105, 42, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-card:hover {
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow:
+            0 12px 40px 0 rgba(241, 105, 42, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
     }
 }

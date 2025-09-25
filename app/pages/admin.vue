@@ -11,7 +11,7 @@
     </div>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card>
+      <Card class="shadow-float">
         <CardHeader>
           <CardTitle>Pending</CardTitle>
           <CardDescription>Awaiting approval</CardDescription>
@@ -20,7 +20,7 @@
           <div class="text-3xl font-semibold">{{ stats?.pendingBookings ?? '—' }}</div>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="shadow-card-glow">
         <CardHeader>
           <CardTitle>Approved</CardTitle>
           <CardDescription>All-time</CardDescription>
@@ -29,7 +29,7 @@
           <div class="text-3xl font-semibold">{{ stats?.approvedBookings ?? '—' }}</div>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="shadow-float">
         <CardHeader>
           <CardTitle>Resources</CardTitle>
           <CardDescription>Active</CardDescription>
@@ -50,7 +50,7 @@
               <SelectValue placeholder="All users" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectGroup>
                 <SelectItem v-for="u in usersList" :key="u.id" :value="String(u.id)">{{ u.name || u.username || u.email }}</SelectItem>
               </SelectGroup>
@@ -64,7 +64,7 @@
               <SelectValue placeholder="All resources" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectGroup>
                 <SelectItem v-for="r in resources || []" :key="r.id" :value="String(r.id)">{{ r.name }}</SelectItem>
               </SelectGroup>
@@ -78,7 +78,7 @@
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="PENDING">Pending</SelectItem>
               <SelectItem value="APPROVED">Approved</SelectItem>
               <SelectItem value="REJECTED">Rejected</SelectItem>
@@ -162,7 +162,7 @@
         </Dialog>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Card v-for="r in resources" :key="r.id">
+        <Card v-for="r in resources" :key="r.id" class="shadow-card">
           <CardHeader>
             <CardTitle>{{ r.name }}</CardTitle>
             <CardDescription>{{ r.category }} • {{ r.location || 'N/A' }}</CardDescription>
@@ -351,10 +351,10 @@
       </DialogContent>
     </Dialog>
 
-    <!-- <section>
+    <section>
       <h2 class="font-medium mb-2">Reports</h2>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card class="lg:col-span-2">
+        <Card class="lg:col-span-2 shadow-card-glow">
           <CardHeader>
             <CardTitle>Bookings per month</CardTitle>
             <CardDescription>Based on current filters</CardDescription>
@@ -363,7 +363,7 @@
             <Bar :data="barDataAdmin" :options="chartOptions" />
           </CardContent>
         </Card>
-        <Card>
+        <Card class="shadow-float">
           <CardHeader>
             <CardTitle>Status distribution</CardTitle>
             <CardDescription>Based on current filters</CardDescription>
@@ -373,17 +373,17 @@
           </CardContent>
         </Card>
       </div>
-    </section> -->
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-// import { Bar, Doughnut } from 'vue-chartjs'
-// import { Chart, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
-// import { useToast } from '~/components/ui/toast/use-toast'
-// Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)
+import { Bar, Doughnut } from 'vue-chartjs'
+import { Chart, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
+import { useToast } from '../../components/ui/toast/use-toast'
+Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)
 
-definePageMeta({ middleware: ['admin'] })
+definePageMeta({ middleware: 'admin' })
 
 type UserListItem = { id: number; email: string; username: string; name: string | null; role: 'EMPLOYEE' | 'ADMIN'; createdAt: string | Date; active: boolean }
 
@@ -392,9 +392,9 @@ const { data: resources, refresh: refreshResources } = await useFetch('/api/reso
 const { data: users, refresh: refreshUsers } = await useFetch<UserListItem[]>('/api/users', { server: false })
 const usersList = computed<UserListItem[]>(() => (users.value as any) || [])
 
-const filters = reactive<{ userId: string | ''; resourceId: string | ''; status: string | ''; from: string | ''; to: string | ''}>({
-  userId: '',
-  resourceId: '',
+const filters = reactive<{ userId: string; resourceId: string; status: string; from: string; to: string}>({
+  userId: 'all',
+  resourceId: 'all',
   status: 'PENDING',
   from: '',
   to: ''
@@ -403,13 +403,13 @@ const filters = reactive<{ userId: string | ''; resourceId: string | ''; status:
 const bookingsList = ref<any[]>([])
 async function loadBookings() {
   const query: any = {}
-  if (filters.userId) query.userId = filters.userId
-  if (filters.resourceId) query.resourceId = filters.resourceId
-  if (filters.status) query.status = filters.status
+  if (filters.userId && filters.userId !== 'all') query.userId = filters.userId
+  if (filters.resourceId && filters.resourceId !== 'all') query.resourceId = filters.resourceId
+  if (filters.status && filters.status !== 'all') query.status = filters.status
   if (filters.from) query.from = filters.from
   if (filters.to) query.to = filters.to
   try {
-    bookingsList.value = await $fetch('/api/bookings', { query })
+    bookingsList.value = await $fetch<any[]>('/api/bookings', { query })
   } catch (e: any) {
     const status = e?.data?.statusCode || e?.response?.status
     if (status === 401 || status === 403) {
