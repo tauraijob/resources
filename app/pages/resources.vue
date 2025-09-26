@@ -23,13 +23,28 @@
         <NuxtLink v-if="isAvailable(r.id)" :to="{ path: '/bookings', query: { resourceId: r.id } }">
           <Card class="transition hover:ring-1 hover:ring-ring cursor-pointer">
             <CardHeader>
-              <CardTitle>{{ r.name }}</CardTitle>
+              <CardTitle class="flex items-center justify-between">
+                <NuxtLink :to="`/resources/${r.id}`" class="hover:text-primary transition-colors">
+                  {{ r.name }}
+                </NuxtLink>
+                <div v-if="isCar(r.category)" class="flex items-center gap-2">
+                  <span class="text-sm text-muted-foreground">🚗</span>
+                  <span v-if="r.currentMileage" class="text-xs text-muted-foreground">
+                    {{ r.currentMileage.toLocaleString() }} km
+                  </span>
+                </div>
+              </CardTitle>
               <CardDescription>{{ r.category }}</CardDescription>
             </CardHeader>
             <CardContent>
               <p class="text-sm text-muted-foreground">{{ r.location || 'N/A' }}</p>
-              <div class="mt-2">
+              <div class="mt-2 flex items-center justify-between">
                 <Badge variant="secondary">Available</Badge>
+                <MileageLogDialog 
+                  v-if="isCar(r.category)" 
+                  :resource="r" 
+                  @success="refresh"
+                />
               </div>
             </CardContent>
           </Card>
@@ -38,13 +53,30 @@
           <DialogTrigger as-child>
             <Card class="cursor-pointer">
               <CardHeader>
-                <CardTitle>{{ r.name }}</CardTitle>
+                <CardTitle class="flex items-center justify-between">
+                  <NuxtLink :to="`/resources/${r.id}`" class="hover:text-primary transition-colors">
+                    {{ r.name }}
+                  </NuxtLink>
+                  <div v-if="isCar(r.category)" class="flex items-center gap-2">
+                    <span class="text-sm text-muted-foreground">🚗</span>
+                    <span v-if="r.currentMileage" class="text-xs text-muted-foreground">
+                      {{ r.currentMileage.toLocaleString() }} km
+                    </span>
+                  </div>
+                </CardTitle>
                 <CardDescription>{{ r.category }}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p class="text-sm text-muted-foreground">{{ r.location || 'N/A' }}</p>
-                <div class="mt-2" v-if="statusMap[r.id]?.activeBooking">
-                  <Badge variant="destructive">Booked: {{ formatDate(statusMap[r.id].activeBooking.startTime) }} → {{ formatDate(statusMap[r.id].activeBooking.endTime) }}</Badge>
+                <div class="mt-2 flex items-center justify-between">
+                  <div v-if="statusMap[r.id]?.activeBooking">
+                    <Badge variant="destructive">Booked: {{ formatDate(statusMap[r.id].activeBooking.startTime) }} → {{ formatDate(statusMap[r.id].activeBooking.endTime) }}</Badge>
+                  </div>
+                  <MileageLogDialog 
+                    v-if="isCar(r.category)" 
+                    :resource="r" 
+                    @success="refresh"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -124,6 +156,10 @@ function isAvailable(id: number): boolean {
 function formatDate(d: string | Date) {
   const date = new Date(d)
   return date.toLocaleString()
+}
+
+function isCar(category: string): boolean {
+  return category.toLowerCase() === 'car' || category.toLowerCase() === 'vehicle'
 }
 </script>
 

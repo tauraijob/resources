@@ -1,6 +1,7 @@
 import { prisma } from '~~/server/utils/prisma'
 import { requireAdmin } from '~~/server/utils/auth'
 import { sendBookingApprovalEmail, sendBookingNotificationEmployee } from '~~/server/utils/email'
+import { updateResourceStatus } from '~~/server/utils/resource-status'
 
 export default defineEventHandler(async (event) => {
     const admin = await requireAdmin(event)
@@ -60,6 +61,15 @@ export default defineEventHandler(async (event) => {
             user: { select: { id: true, email: true, name: true, username: true } }
         }
     })
+
+    // Update resource status after approval
+    try {
+        await updateResourceStatus(booking.resourceId)
+        console.log('Resource status updated after approval')
+    } catch (statusError) {
+        console.error('Failed to update resource status:', statusError)
+        // Don't fail the approval if status update fails
+    }
 
     // Send approval emails
     try {

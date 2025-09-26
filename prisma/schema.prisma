@@ -7,75 +7,107 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  EMPLOYEE
-  ADMIN
+model approval {
+  id        Int             @id @default(autoincrement())
+  bookingId Int             @unique(map: "Approval_bookingId_key")
+  adminId   Int
+  status    approval_status
+  note      String?
+  createdAt DateTime        @default(now())
+  user      user            @relation(fields: [adminId], references: [id], map: "Approval_adminId_fkey")
+  booking   booking         @relation(fields: [bookingId], references: [id], map: "Approval_bookingId_fkey")
+
+  @@index([adminId], map: "Approval_adminId_fkey")
 }
 
-enum BookingStatus {
+model booking {
+  id            Int            @id @default(autoincrement())
+  resourceId    Int
+  userId        Int
+  location      String?
+  startTime     DateTime
+  endTime       DateTime
+  status        booking_status @default(PENDING)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  googleEventId String?
+  startMileage  Int? // Mileage when booking started
+  endMileage    Int? // Mileage when booking ended
+  approval      approval?
+  resource      resource       @relation(fields: [resourceId], references: [id], map: "Booking_resourceId_fkey")
+  user          user           @relation(fields: [userId], references: [id], map: "Booking_userId_fkey")
+
+  @@index([endTime], map: "Booking_endTime_idx")
+  @@index([resourceId, endTime], map: "Booking_resourceId_endTime_idx")
+  @@index([resourceId, startTime], map: "Booking_resourceId_startTime_idx")
+  @@index([userId], map: "Booking_userId_fkey")
+}
+
+model resource {
+  id             Int          @id @default(autoincrement())
+  name           String
+  category       String
+  location       String?
+  metadata       String?      @db.LongText
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  status         String       @default("available") // Keep as String to work with existing data
+  currentMileage Int? // Current mileage for cars
+  booking        booking[]
+  mileageLogs    mileageLog[]
+}
+
+model user {
+  id                      Int          @id @default(autoincrement())
+  email                   String       @unique(map: "User_email_key")
+  username                String       @unique(map: "User_username_key")
+  passwordHash            String
+  name                    String?
+  role                    user_role    @default(EMPLOYEE)
+  active                  Boolean      @default(true)
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  resetExpiry             DateTime?
+  resetToken              String?
+  googleRefreshToken      String? // For personal Google Calendar integration
+  googleCalendarConnected Boolean      @default(false)
+  approval                approval[]
+  booking                 booking[]
+  mileageLogs             mileageLog[]
+}
+
+enum approval_status {
   PENDING
   APPROVED
   REJECTED
   CANCELLED
 }
 
-model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
-  username     String    @unique
-  passwordHash String
-  name         String?
-  role         UserRole  @default(EMPLOYEE)
-  active       Boolean   @default(true)
-  resetToken   String?
-  resetExpiry  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  bookings  Booking[]
-  approvals Approval[] @relation("ApprovalAdmin")
+enum user_role {
+  EMPLOYEE
+  ADMIN
 }
 
-model Resource {
-  id        Int      @id @default(autoincrement())
-  name      String
-  category  String
-  location  String?
-  metadata  Json?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  bookings Booking[]
+enum booking_status {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
 }
 
-model Booking {
-  id         Int           @id @default(autoincrement())
-  resource   Resource      @relation(fields: [resourceId], references: [id])
+model mileageLog {
+  id         Int      @id @default(autoincrement())
   resourceId Int
-  user       User          @relation(fields: [userId], references: [id])
   userId     Int
-  location   String?
-  startTime  DateTime
-  endTime    DateTime
-  status     BookingStatus @default(PENDING)
+  bookingId  Int?
+  mileage    Int
   notes      String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  loggedAt   DateTime @default(now())
+  resource   resource @relation(fields: [resourceId], references: [id])
+  user       user     @relation(fields: [userId], references: [id])
 
-  approval Approval?
-
-  @@index([resourceId, startTime])
-  @@index([resourceId, endTime])
-}
-
-model Approval {
-  id        Int           @id @default(autoincrement())
-  booking   Booking       @relation(fields: [bookingId], references: [id])
-  bookingId Int           @unique
-  admin     User          @relation("ApprovalAdmin", fields: [adminId], references: [id])
-  adminId   Int
-  status    BookingStatus
-  note      String?
-  createdAt DateTime      @default(now())
+  @@index([resourceId], map: "MileageLog_resourceId_fkey")
+  @@index([userId], map: "MileageLog_userId_fkey")
 }

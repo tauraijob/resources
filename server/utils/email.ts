@@ -571,12 +571,152 @@ export const emailTemplates = {
       Best regards,
       Webdev Resources Team
     `
-    })
+    }),
+
+    bookingConfirmation: (userName: string, resourceName: string, startTime: string, endTime: string, location: string, bookingId: number) => {
+        // Create calendar links
+        const startDate = new Date(startTime)
+        const endDate = new Date(endTime)
+
+        // Format dates for calendar links (ISO format)
+        const startISO = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+        const endISO = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+
+        // Create Google Calendar link
+        const googleCalendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`${resourceName} Booking`)}&dates=${startISO}/${endISO}&details=${encodeURIComponent(`Booking ID: ${bookingId}\nResource: ${resourceName}\nLocation: ${location}`)}&location=${encodeURIComponent(location)}`
+
+        // Create Outlook Calendar link
+        const outlookCalendarLink = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(`${resourceName} Booking`)}&startdt=${startISO}&enddt=${endISO}&body=${encodeURIComponent(`Booking ID: ${bookingId}\nResource: ${resourceName}\nLocation: ${location}`)}&location=${encodeURIComponent(location)}`
+
+        // Create .ics file link (for other calendar apps)
+        const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Webdev Resources//Booking System//EN
+BEGIN:VEVENT
+UID:booking-${bookingId}@webdev.co.zw
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTSTART:${startISO}
+DTEND:${endISO}
+SUMMARY:${resourceName} Booking
+DESCRIPTION:Booking ID: ${bookingId}\\nResource: ${resourceName}\\nLocation: ${location}
+LOCATION:${location}
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`
+
+        const icsDataUri = `data:text/calendar;charset=utf8,${encodeURIComponent(icsContent)}`
+
+        return {
+            subject: "📅 Booking Confirmation - Webdev Resources",
+            html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+        <div style="background: linear-gradient(135deg, #f1692a 0%, #e55a1a 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">📅 Booking Confirmed!</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Your booking request has been submitted</p>
+        </div>
+        
+        <div style="padding: 30px; background: #ffffff;">
+          <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px;">Hello ${userName}!</h2>
+          
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+            Your booking request has been successfully submitted and is pending admin approval. You'll receive another email once it's approved.
+          </p>
+          
+          <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; margin: 25px 0;">
+            <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">📅 Booking Details</h3>
+            <div style="color: #4b5563; font-size: 16px; line-height: 1.8;">
+              <p style="margin: 8px 0;"><strong>Booking ID:</strong> #${bookingId}</p>
+              <p style="margin: 8px 0;"><strong>Resource:</strong> ${resourceName}</p>
+              <p style="margin: 8px 0;"><strong>Start Time:</strong> ${startTime}</p>
+              <p style="margin: 8px 0;"><strong>End Time:</strong> ${endTime}</p>
+              <p style="margin: 8px 0;"><strong>Location:</strong> ${location}</p>
+              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #f59e0b; font-weight: 600;">Pending Approval</span></p>
+            </div>
+          </div>
+          
+          <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 25px 0;">
+            <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 18px;">📱 Add to Your Calendar</h3>
+            <p style="color: #92400e; font-size: 14px; margin: 0 0 15px 0;">Click one of the buttons below to add this booking to your calendar:</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+              <a href="${googleCalendarLink}" style="display: inline-block; background: #4285f4; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                📅 Google Calendar
+              </a>
+              <a href="${outlookCalendarLink}" style="display: inline-block; background: #0078d4; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                📅 Outlook
+              </a>
+              <a href="${icsDataUri}" style="display: inline-block; background: #6b7280; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                📅 Download .ics
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="http://localhost:3000/bookings" style="display: inline-block; background: linear-gradient(135deg, #f1692a 0%, #e55a1a 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              View My Bookings
+            </a>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0;">
+            You'll receive an email notification once your booking is approved or rejected by an admin.
+          </p>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 20px; text-align: center; border-radius: 0 0 12px 12px; border-top: 1px solid #e5e7eb;">
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">
+            This is an automated confirmation from Webdev Resources.<br>
+            Please do not reply to this email.
+          </p>
+        </div>
+      </div>
+    `,
+            text: `
+      📅 Booking Confirmation - Webdev Resources
+      
+      Hello ${userName}!
+      
+      Your booking request has been successfully submitted and is pending admin approval. You'll receive another email once it's approved.
+      
+      📅 Booking Details:
+      - Booking ID: #${bookingId}
+      - Resource: ${resourceName}
+      - Start Time: ${startTime}
+      - End Time: ${endTime}
+      - Location: ${location}
+      - Status: Pending Approval
+      
+      📱 Add to Your Calendar:
+      - Google Calendar: ${googleCalendarLink}
+      - Outlook: ${outlookCalendarLink}
+      - Download .ics file: ${icsDataUri}
+      
+      View your bookings: http://localhost:3000/bookings
+      
+      You'll receive an email notification once your booking is approved or rejected by an admin.
+      
+      This is an automated confirmation from Webdev Resources.
+      Please do not reply to this email.
+    `
+        }
+    }
 }
+
+// Rate limiting for email sending
+let lastEmailTime = 0
+const EMAIL_RATE_LIMIT = 10000 // 10 seconds between emails to avoid Mailtrap limits
 
 // Email sending functions
 export const sendEmail = async (to: string, subject: string, html: string, text: string) => {
     try {
+        // Rate limiting to prevent Mailtrap limits
+        const now = Date.now()
+        const timeSinceLastEmail = now - lastEmailTime
+        if (timeSinceLastEmail < EMAIL_RATE_LIMIT) {
+            const waitTime = EMAIL_RATE_LIMIT - timeSinceLastEmail
+            console.log(`Rate limiting: waiting ${waitTime}ms before sending email`)
+            await new Promise(resolve => setTimeout(resolve, waitTime))
+        }
+        lastEmailTime = Date.now()
+
         const config = useRuntimeConfig()
         const transporter = createTransporter()
 
@@ -634,5 +774,10 @@ export const sendBookingNotificationEmployee = async (userEmail: string, userNam
 
 export const sendUpcomingBookingReminder = async (userEmail: string, userName: string, resourceName: string, startTime: string, endTime: string, location: string, timeUntil: string) => {
     const template = emailTemplates.upcomingBookingReminder(userName, resourceName, startTime, endTime, location, timeUntil)
+    return await sendEmail(userEmail, template.subject, template.html, template.text)
+}
+
+export const sendBookingConfirmationEmail = async (userEmail: string, userName: string, resourceName: string, startTime: string, endTime: string, location: string, bookingId: number) => {
+    const template = emailTemplates.bookingConfirmation(userName, resourceName, startTime, endTime, location, bookingId)
     return await sendEmail(userEmail, template.subject, template.html, template.text)
 }

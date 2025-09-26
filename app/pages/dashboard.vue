@@ -11,6 +11,43 @@
       </div>
     </div>
 
+    <!-- Google Calendar Integration Section -->
+    <section>
+      <h2 class="font-medium mb-3">Google Calendar Integration</h2>
+      <Card class="shadow-card">
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            📅 Google Calendar
+            <Badge v-if="user?.googleCalendarConnected" variant="default" class="bg-green-100 text-green-800">Connected</Badge>
+            <Badge v-else variant="secondary">Not Connected</Badge>
+          </CardTitle>
+          <CardDescription>
+            Connect your Google Calendar to automatically add booking events to your personal calendar
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div v-if="!user?.googleCalendarConnected" class="space-y-3">
+            <p class="text-sm text-muted-foreground">
+              When you connect your Google Calendar, all your bookings will be automatically added to your personal calendar.
+            </p>
+            <Button @click="connectGoogleCalendar" :disabled="connectingCalendar" class="w-full sm:w-auto">
+              <span v-if="connectingCalendar">Connecting...</span>
+              <span v-else>Connect Google Calendar</span>
+            </Button>
+          </div>
+          <div v-else class="space-y-3">
+            <p class="text-sm text-green-600">
+              ✅ Your Google Calendar is connected! All your bookings will be automatically added to your personal calendar.
+            </p>
+            <Button @click="disconnectGoogleCalendar" :disabled="disconnectingCalendar" variant="outline" class="w-full sm:w-auto">
+              <span v-if="disconnectingCalendar">Disconnecting...</span>
+              <span v-else>Disconnect Google Calendar</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+
     <section>
       <h2 class="font-medium mb-2">Resources</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -131,15 +168,99 @@ definePageMeta({
 })
 import { Bar, Doughnut } from 'vue-chartjs'
 import { Chart, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
+import { useToast } from '~~/components/ui/toast/use-toast'
 Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)
 
 const { data: statusList } = await useFetch('/api/resources/status', { server: false })
 const { data: bookings } = await useFetch('/api/bookings', { server: false })
 const { data: meStats } = await useFetch('/api/users/me/stats', { server: false })
+const { data: user } = await useFetch('/api/auth/me', { server: false })
+
+// Google Calendar connection state
+const connectingCalendar = ref(false)
+const disconnectingCalendar = ref(false)
+const { toast } = useToast()
+
+// Handle OAuth callback messages
+const route = useRoute()
+onMounted(() => {
+  const success = route.query.success
+  const error = route.query.error
+  
+  if (success === 'google_calendar_connected') {
+    toast({
+      title: "Google Calendar Connected! 🎉",
+      description: "Your Google Calendar has been successfully connected. All your bookings will now be added to your personal calendar.",
+      variant: "default"
+    })
+    // Refresh user data to show updated connection status
+    refreshCookie('user')
+    // Clean up URL
+    navigateTo('/dashboard', { replace: true })
+  } else if (error) {
+    let errorMessage = "An error occurred during Google Calendar connection."
+    if (error === 'oauth_error') {
+      errorMessage = "Google OAuth authorization was cancelled or failed."
+    } else if (error === 'no_code') {
+      errorMessage = "No authorization code received from Google."
+    } else if (error === 'callback_failed') {
+      errorMessage = "Failed to complete Google Calendar connection."
+    }
+    
+    toast({
+      title: "Connection Failed",
+      description: errorMessage,
+      variant: "destructive"
+    })
+    // Clean up URL
+    navigateTo('/dashboard', { replace: true })
+  }
+})
 
 function formatDate(d: string | Date) {
   const date = new Date(d)
   return date.toLocaleString()
+}
+
+// Google Calendar connection functions
+async function connectGoogleCalendar() {
+  connectingCalendar.value = true
+  try {
+    const response = await $fetch('/api/auth/google-calendar/connect')
+    // Redirect to Google OAuth
+    window.location.href = response.authUrl
+  } catch (error: any) {
+    toast({
+      title: "Connection Failed",
+      description: error.data?.statusMessage || error.message || "Failed to connect Google Calendar",
+      variant: "destructive"
+    })
+  } finally {
+    connectingCalendar.value = false
+  }
+}
+
+async function disconnectGoogleCalendar() {
+  disconnectingCalendar.value = true
+  try {
+    await $fetch('/api/auth/google-calendar/disconnect', { method: 'POST' })
+    toast({
+      title: "Google Calendar Disconnected",
+      description: "Your Google Calendar has been disconnected successfully.",
+      variant: "default"
+    })
+    // Refresh user data
+    await refreshCookie('user')
+    window.location.reload()
+  } catch (error: any) {
+    toast({
+      title: "Disconnection Failed",
+      description: error.data?.statusMessage || error.message || "Failed to disconnect Google Calendar",
+      variant: "destructive"
+    })
+  } finally {
+    disconnectingCalendar.value = false
+  }
 }
 
 const barData = computed(() => ({
