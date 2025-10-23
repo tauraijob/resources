@@ -3,7 +3,7 @@ import { google } from 'googleapis'
 export default defineEventHandler(async (event) => {
     try {
         const config = useRuntimeConfig()
-        
+
         console.log('Google Calendar connect - config check:', {
             hasClientId: !!config.googleClientId,
             hasClientSecret: !!config.googleClientSecret,
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
         const protocol = getHeader(event, 'x-forwarded-proto') || 'http'
         const host = getHeader(event, 'host') || 'localhost:3000'
         const redirectUri = `${protocol}://${host}/api/google-callback`
-        
+
         console.log('Generated redirect URI:', redirectUri)
 
         const oauth2Client = new google.auth.OAuth2(
