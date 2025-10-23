@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    const redirectUri = `${process.env.NUXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/google-callback`
+    // Get the base URL from the request
+    const protocol = getHeader(event, 'x-forwarded-proto') || 'http'
+    const host = getHeader(event, 'host') || 'localhost:3000'
+    const redirectUri = `${protocol}://${host}/api/google-callback`
 
     const oauth2Client = new google.auth.OAuth2(
         config.googleClientId,

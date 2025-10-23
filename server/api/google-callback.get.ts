@@ -6,7 +6,12 @@ const config = useRuntimeConfig()
 
 const CLIENT_ID = config.googleClientId
 const CLIENT_SECRET = config.googleClientSecret
-const REDIRECT_URI = `${process.env.NUXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/google-callback`
+// Get the base URL from the request
+const getRedirectUri = (event: any) => {
+    const protocol = getHeader(event, 'x-forwarded-proto') || 'http'
+    const host = getHeader(event, 'host') || 'localhost:3000'
+    return `${protocol}://${host}/api/google-callback`
+}
 
 export default defineEventHandler(async (event) => {
     try {
@@ -28,10 +33,11 @@ export default defineEventHandler(async (event) => {
         const user = await requireUser(event)
 
         // Exchange authorization code for tokens
+        const redirectUri = getRedirectUri(event)
         const oauth2Client = new google.auth.OAuth2(
             CLIENT_ID,
             CLIENT_SECRET,
-            REDIRECT_URI
+            redirectUri
         )
 
         const { tokens } = await oauth2Client.getToken(code)
