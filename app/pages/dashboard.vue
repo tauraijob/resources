@@ -174,7 +174,7 @@ Chart.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Lege
 const { data: statusList } = await useFetch('/api/resources/status', { server: false })
 const { data: bookings } = await useFetch('/api/bookings', { server: false })
 const { data: meStats } = await useFetch('/api/users/me/stats', { server: false })
-const { data: user } = await useFetch('/api/auth/me', { server: false })
+const { user, fetchUser } = useAuth()
 
 // Google Calendar connection state
 const connectingCalendar = ref(false)
@@ -183,7 +183,7 @@ const { toast } = useToast()
 
 // Handle OAuth callback messages
 const route = useRoute()
-onMounted(() => {
+onMounted(async () => {
   const success = route.query.success
   const error = route.query.error
   
@@ -194,7 +194,8 @@ onMounted(() => {
       variant: "default"
     })
     // Refresh user data to show updated connection status
-    refreshCookie('user')
+    await fetchUser()
+    console.log('User after fetchUser:', user.value)
     // Clean up URL
     navigateTo('/dashboard', { replace: true })
   } else if (error) {
@@ -250,8 +251,7 @@ async function disconnectGoogleCalendar() {
       variant: "default"
     })
     // Refresh user data
-    await refreshCookie('user')
-    window.location.reload()
+    await fetchUser()
   } catch (error: any) {
     toast({
       title: "Disconnection Failed",

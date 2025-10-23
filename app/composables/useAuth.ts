@@ -4,6 +4,7 @@ interface User {
     username: string
     name?: string
     role: 'EMPLOYEE' | 'ADMIN'
+    googleCalendarConnected?: boolean
 }
 
 // Global state that can be shared across all components
@@ -20,6 +21,7 @@ export const useAuth = () => {
             const response = await $fetch('/api/auth/me')
             user.value = response
             console.log('User fetched:', response)
+            console.log('Google Calendar Connected:', response?.googleCalendarConnected)
         } catch (error) {
             user.value = null
             console.log('Auth error:', error)
